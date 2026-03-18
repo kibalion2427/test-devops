@@ -130,6 +130,29 @@ resource "aws_iam_role_policy_attachment" "lambda_vpc" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
 }
 
+resource "aws_iam_role_policy" "lambda_s3_list" {
+  name = "${aws_iam_role.lambda.name}-s3-list"
+  role = aws_iam_role.lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid    = "ListAllMyBuckets"
+        Effect = "Allow"
+        Action = ["s3:ListAllMyBuckets"]
+        Resource = ["*"]
+      },
+      {
+        Sid    = "ListBucketObjects"
+        Effect = "Allow"
+        Action = ["s3:ListBucket"]
+        Resource = [data.aws_s3_bucket.data.arn]
+      }
+    ]
+  })
+}
+
 resource "aws_security_group" "lambda" {
   name_prefix = "${local.name}-lambda-"
   vpc_id      = aws_vpc.main.id
